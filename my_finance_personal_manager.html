@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101d2a">
+<title>My Finance — Personal Manager</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#172331;--muted:#738091;--navy:#101d2a;--green:#16845d;--red:#c34e4e;--line:#e7ebef;--accent:#dff4eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:88px}
+header{background:var(--navy);color:white;padding:22px 18px 24px;border-radius:0 0 24px 24px}
+.top{display:flex;justify-content:space-between;align-items:center}.brand{font-size:20px;font-weight:750;letter-spacing:.2px}.sub{color:#b7c4cf;font-size:12px;margin-top:4px}
+.balance-label{font-size:12px;color:#b7c4cf;margin-top:22px}.balance{font-size:32px;font-weight:750;margin-top:4px;letter-spacing:-.7px}
+.currency-switch{display:flex;gap:7px}.currency-switch button{border:1px solid #506070;background:transparent;color:#dce5ec;border-radius:20px;padding:7px 12px}.currency-switch button.active{background:white;color:var(--navy);border-color:white}
+.wrap{max-width:720px;margin:auto;padding:16px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:-2px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;box-shadow:0 3px 12px #15263808}.metric-label{font-size:12px;color:var(--muted)}.metric{font-size:20px;font-weight:750;margin-top:7px}.green{color:var(--green)}.red{color:var(--red)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}.section-head h2{font-size:17px;margin:0}.small{font-size:12px;color:var(--muted)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 4px calc(9px + env(safe-area-inset-bottom));z-index:5}
+nav button{border:0;background:none;color:#7b8794;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 9px}nav button b{font-size:19px;font-weight:500}nav button.active{color:var(--green);font-weight:700}
+.page{display:none}.page.active{display:block}
+button,.btn{cursor:pointer}.primary{background:var(--green);color:white;border:0;border-radius:12px;padding:11px 15px;font-weight:650}.secondary{background:white;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 13px;font-weight:600}.danger{color:var(--red);border:1px solid #f0d5d5;background:#fff;border-radius:10px;padding:7px 10px}
+.list{display:flex;flex-direction:column;gap:8px}.item{background:white;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}.item-title{font-weight:650}.item-meta{font-size:12px;color:var(--muted);margin-top:4px}
+form{display:grid;gap:10px}.field{display:grid;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:650}input,select,textarea{width:100%;padding:12px;border:1px solid #dce2e8;border-radius:11px;background:white;color:var(--ink);font:inherit;min-height:44px}textarea{min-height:75px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.pill{font-size:11px;border-radius:20px;padding:4px 8px;background:#eef2f5;color:#526171}.progress{height:8px;background:#edf0f2;border-radius:9px;overflow:hidden;margin:9px 0}.progress span{display:block;height:100%;background:var(--green);border-radius:9px}
+.empty{color:var(--muted);text-align:center;padding:22px 10px;font-size:13px}.notice{background:#fff8e8;border:1px solid #f1e2bb;color:#6d5722;border-radius:13px;padding:12px;font-size:12px;line-height:1.5;margin-top:14px}
+.modal{display:none;position:fixed;inset:0;background:#07111dcc;z-index:10;align-items:flex-end;justify-content:center;padding:12px}.modal.show{display:flex}.sheet{background:var(--bg);border-radius:20px 20px 14px 14px;padding:18px;width:min(100%,600px);max-height:90vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-head h3{margin:0}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+@media(min-width:650px){.wrap{padding:22px}.summary{grid-template-columns:repeat(4,1fr)}.modal{align-items:center}}
+</style>
+</head>
+<body>
+<header>
+ <div class="top"><div><div class="brand">My Finance</div><div class="sub">Your money · tasks · goals</div></div><div class="currency-switch"><button class="active" id="aedBtn" onclick="setCurrency('AED')">AED</button><button id="inrBtn" onclick="setCurrency('INR')">INR</button></div></div>
+ <div class="balance-label">NET BALANCE · <span id="activeCurrency">AED</span></div><div class="balance" id="balance">AED 0.00</div>
+</header>
+<main class="wrap">
+<section id="dashboard" class="page active">
+ <div class="summary">
+  <div class="card"><div class="metric-label">Income</div><div class="metric green" id="incomeTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Expenses</div><div class="metric red" id="expenseTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Tasks pending</div><div class="metric" id="pendingTotal">0</div></div>
+  <div class="card"><div class="metric-label">Active goals</div><div class="metric" id="goalTotal">0</div></div>
+ </div>
+ <div class="section-head"><h2>Recent transactions</h2><button class="secondary" onclick="showPage('money')">See all</button></div>
+ <div class="list" id="recentList"></div>
+ <div class="section-head"><h2>Your goals</h2><button class="secondary" onclick="showPage('goals')">View goals</button></div>
+ <div class="list" id="dashboardGoals"></div>
+ <div class="section-head"><h2>Upcoming tasks</h2><button class="secondary" onclick="showPage('tasks')">View tasks</button></div>
+ <div class="list" id="dashboardTasks"></div>
+</section>
+<section id="money" class="page">
+ <div class="section-head"><h2>Income & expenses</h2><button class="primary" onclick="openTransaction()">+ Add</button></div>
+ <div class="row"><div class="field"><label>Currency view</label><select id="moneyCurrency" onchange="renderMoney()"><option>AED</option><option>INR</option></select></div><div class="field"><label>Type</label><select id="moneyType" onchange="renderMoney()"><option value="all">All transactions</option><option value="Income">Income</option><option value="Expense">Expenses</option></select></div></div>
+ <div class="summary" style="margin:12px 0"><div class="card"><div class="metric-label">Income</div><div class="metric green" id="moneyIncome">0</div></div><div class="card"><div class="metric-label">Expenses</div><div class="metric red" id="moneyExpense">0</div></div></div>
+ <div class="list" id="transactionList"></div>
+</section>
+<section id="tasks" class="page">
+ <div class="section-head"><h2>My tasks</h2><button class="primary" onclick="openTask()">+ Add task</button></div>
+ <div class="field"><label>Show</label><select id="taskFilter" onchange="renderTasks()"><option value="all">All tasks</option><option value="open">Pending</option><option value="done">Completed</option></select></div>
+ <div class="list" id="taskList" style="margin-top:12px"></div>
+</section>
+<section id="goals" class="page">
+ <div class="section-head"><h2>My goals</h2><button class="primary" onclick="openGoal()">+ Add goal</button></div>
+ <div class="list" id="goalList"></div>
+</section>
+<section id="settings" class="page">
+ <div class="section-head"><h2>Customise your app</h2></div>
+ <div class="card">
+  <h3 style="margin:0 0 12px">Categories</h3>
+  <div class="row"><div class="field"><label>Category type</label><select id="catType"><option>Expense</option><option>Income</option></select></div><div class="field"><label>Currency</label><select id="catCurrency"><option>AED</option><option>INR</option><option>Both</option></select></div></div>
+  <div class="field" style="margin-top:9px"><label>New category name</label><input id="newCategory" placeholder="e.g. Petrol, Freelance"></div>
+  <button class="primary" style="margin-top:10px" onclick="addCategory()">Add category</button>
+  <div id="categoryList" class="list" style="margin-top:14px"></div>
+ </div>
+ <div class="card" style="margin-top:13px">
+  <h3 style="margin:0 0 8px">Backup & restore</h3>
+  <p class="small">Export a backup file regularly. You can keep it in iCloud Drive using the iPhone Files app.</p>
+  <div class="row"><button class="secondary" onclick="exportData()">Export backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button></div>
+  <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)">
+  <button class="danger" style="margin-top:12px" onclick="clearData()">Delete all app data</button>
+ </div>
+ <div class="notice"><b>Where is your data stored?</b><br>This starter app stores data in this browser on this iPhone. It does not automatically sync with iCloud or your other phone. Use Export backup and save the file in iCloud Drive for a manual backup. Do not enter bank passwords, card numbers or other highly sensitive details.</div>
+</section>
+<footer>My Finance · Personal use · Starter edition</footer>
+</main>
+<nav>
+ <button class="active" data-page="dashboard" onclick="showPage('dashboard')"><b>⌂</b>Home</button>
+ <button data-page="money" onclick="showPage('money')"><b>◉</b>Money</button>
+ <button data-page="tasks" onclick="showPage('tasks')"><b>☑</b>Tasks</button>
+ <button data-page="goals" onclick="showPage('goals')"><b>◎</b>Goals</button>
+ <button data-page="settings" onclick="showPage('settings')"><b>⚙</b>Settings</button>
+</nav>
+<div class="modal" id="modal"><div class="sheet"><div class="sheet-head"><h3 id="modalTitle">Add</h3><button class="secondary" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div>
+<script>
+const KEY='myFinanceStarter_v1';
+const defaults={transactions:[],tasks:[],goals:[],categories:{Expense:{AED:['Rent','Food & groceries','Transport','Shopping','Mobile & internet','Loan / EMI','Tabby','Family','Travel','Other'],INR:['Food','Shopping','Family','Travel','Other']},Income:{AED:['Salary','Overtime','Freelance','Interest','Refund','Other'],INR:['Salary','Business','Interest','Refund','Other']} }};
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch(e){data=JSON.parse(JSON.stringify(defaults))}
+let currency='AED';
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function fmt(n,c){return new Intl.NumberFormat(c==='INR'?'en-IN':'en-AE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));renderAll()}
+function setCurrency(c){currency=c;document.getElementById('aedBtn').classList.toggle('active',c==='AED');document.getElementById('inrBtn').classList.toggle('active',c==='INR');renderAll()}
+function sums(c){let t=data.transactions.filter(x=>x.currency===c);return {inc:t.filter(x=>x.type==='Income').reduce((a,x)=>a+Number(x.amount),0),exp:t.filter(x=>x.type==='Expense').reduce((a,x)=>a+Number(x.amount),0)}}
+function itemHTML(left,meta,right,extra=''){return `<div class="item"><div style="min-width:0"><div class="item-title">${left}</div><div class="item-meta">${meta}</div></div><div style="text-align:right;white-space:nowrap">${right}${extra}</div></div>`}
+function renderDashboard(){
+ let s=sums(currency);document.getElementById('activeCurrency').textContent=currency;document.getElementById('balance').textContent=currency+' '+fmt(s.inc-s.exp,currency);document.getElementById('incomeTotal').textContent=currency+' '+fmt(s.inc,currency);document.getElementById('expenseTotal').textContent=currency+' '+fmt(s.exp,currency);
+ document.getElementById('pendingTotal').textContent=data.tasks.filter(x=>!x.done).length;document.getElementById('goalTotal').textContent=data.goals.length;
+ let recent=data.transactions.slice().reverse().slice(0,4);document.getElementById('recentList').innerHTML=recent.length?recent.map(x=>itemHTML(esc(x.title),`${esc(x.category)} · ${esc(x.date)} · ${x.currency}`,`<b class="${x.type==='Income'?'green':'red'}">${x.type==='Income'?'+':'−'}${fmt(x.amount,x.currency)}</b>`)).join(''):'<div class="empty">No transactions yet. Tap Money to add your first one.</div>';
+ document.getElementById('dashboardGoals').innerHTML=data.goals.slice(0,3).map(g=>`<div class="item"><div style="width:100%"><div class="item-title">${esc(g.name)}</div><div class="item-meta">${g.currency} ${fmt(g.current,g.currency)} of ${fmt(g.target,g.currency)}</div><div class="progress"><span style="width:${Math.min(100,100*g.current/g.target)}%"></span></div></div></div>`).join('')||'<div class="empty">No goals yet.</div>';
+ document.getElementById('dashboardTasks').innerHTML=data.tasks.filter(t=>!t.done).slice(0,3).map(t=>itemHTML(esc(t.title),`${esc(t.due||'No due date')} · ${esc(t.priority)}`,'<span class="pill">Pending</span>')).join('')||'<div class="empty">No pending tasks.</div>';
+}
+function renderMoney(){let c=document.getElementById('moneyCurrency').value||'AED',type=document.getElementById('moneyType').value||'all';let arr=data.transactions.filter(x=>x.currency===c&&(type==='all'||x.type===type)).slice().reverse();let s=sums(c);document.getElementById('moneyIncome').textContent=c+' '+fmt(s.inc,c);document.getElementById('moneyExpense').textContent=c+' '+fmt(s.exp,c);document.getElementById('transactionList').innerHTML=arr.map(x=>itemHTML(esc(x.title),`${esc(x.category)} · ${esc(x.date)} · ${x.currency}`,`<b class="${x.type==='Income'?'green':'red'}">${x.type==='Income'?'+':'−'}${fmt(x.amount,c)}</b>`,`<div style="margin-top:6px"><button class="danger" onclick="deleteTransaction('${x.id}')">Delete</button></div>`)).join('')||'<div class="empty">No matching transactions.</div>'}
+function renderTasks(){let f=document.getElementById('taskFilter').value||'all',arr=data.tasks.filter(t=>f==='all'||(f==='done'?t.done:!t.done));document.getElementById('taskList').innerHTML=arr.map(t=>`<div class="item"><div style="min-width:0"><div class="item-title" style="${t.done?'text-decoration:line-through;color:#89939e':''}">${esc(t.title)}</div><div class="item-meta">${esc(t.due||'No due date')} · ${esc(t.priority)} ${t.note?'· '+esc(t.note):''}</div></div><div style="display:flex;gap:5px"><button class="secondary" onclick="toggleTask('${t.id}')">${t.done?'Undo':'Done'}</button><button class="danger" onclick="deleteTask('${t.id}')">×</button></div></div>`).join('')||'<div class="empty">No tasks here yet.</div>'}
+function renderGoals(){document.getElementById('goalList').innerHTML=data.goals.map(g=>`<div class="card"><div class="top"><div><div class="item-title">${esc(g.name)}</div><div class="item-meta">${esc(g.category)} · ${g.currency}</div></div><button class="danger" onclick="deleteGoal('${g.id}')">Delete</button></div><div class="progress"><span style="width:${Math.min(100,100*g.current/g.target)}%"></span></div><div class="top"><span class="small">${fmt(g.current,g.currency)} saved</span><b>${Math.round(100*g.current/g.target)}%</b></div><div class="field" style="margin-top:12px"><label>Update progress (${g.currency})</label><div class="row"><input id="progress-${g.id}" type="number" min="0" step="0.01" placeholder="New total saved"><button class="secondary" onclick="updateGoal('${g.id}')">Update</button></div></div></div>`).join('')||'<div class="empty">Create a goal, such as emergency fund, holiday or new phone.</div>'}
+function renderCategories(){let out='';for(let type of ['Expense','Income'])for(let c of ['AED','INR'])for(let cat of data.categories[type][c]||[])out+=`<div class="item"><div><div class="item-title">${esc(cat)}</div><div class="item-meta">${type} · ${c}</div></div><button class="danger" onclick="removeCategory('${type}','${c}',${JSON.stringify(cat).replace(/"/g,'&quot;')})">Remove</button></div>`;document.getElementById('categoryList').innerHTML=out}
+function renderAll(){renderDashboard();renderMoney();renderTasks();renderGoals();renderCategories()}
+function openModal(title,html){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=html;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function openTransaction(){openModal('Add transaction',`<form onsubmit="addTransaction(event)"><div class="row"><div class="field"><label>Type</label><select id="txType" onchange="refreshTxCategories()"><option>Expense</option><option>Income</option></select></div><div class="field"><label>Currency</label><select id="txCurrency" onchange="refreshTxCategories()"><option>AED</option><option>INR</option></select></div></div><div class="field"><label>Description</label><input id="txTitle" required placeholder="e.g. Monthly salary or groceries"></div><div class="row"><div class="field"><label>Amount</label><input id="txAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div><div class="field"><label>Date</label><input id="txDate" type="date" required value="${new Date().toISOString().slice(0,10)}"></div></div><div class="field"><label>Category</label><select id="txCategory"></select></div><button class="primary">Save transaction</button></form>`);refreshTxCategories()}
+function refreshTxCategories(){let type=document.getElementById('txType').value,c=document.getElementById('txCurrency').value;let cats=[...(data.categories[type][c]||[]),...(data.categories[type].Both||[])];document.getElementById('txCategory').innerHTML=cats.map(x=>`<option>${esc(x)}</option>`).join('')}
+function addTransaction(e){e.preventDefault();let type=document.getElementById('txType').value,c=document.getElementById('txCurrency').value;data.transactions.push({id:crypto.randomUUID(),type,currency:c,title:document.getElementById('txTitle').value,amount:Number(document.getElementById('txAmount').value),date:document.getElementById('txDate').value,category:document.getElementById('txCategory').value});closeModal();save()}
+function deleteTransaction(id){if(confirm('Delete this transaction?')){data.transactions=data.transactions.filter(x=>x.id!==id);save()}}
+function openTask(){openModal('Create task',`<form onsubmit="addTask(event)"><div class="field"><label>Task name</label><input id="taskTitle" required placeholder="What needs to be done?"></div><div class="row"><div class="field"><label>Due date</label><input id="taskDue" type="date"></div><div class="field"><label>Priority</label><select id="taskPriority"><option>Normal</option><option>High</option><option>Low</option></select></div></div><div class="field"><label>Notes (optional)</label><textarea id="taskNote" placeholder="Add details"></textarea></div><button class="primary">Save task</button></form>`)}
+function addTask(e){e.preventDefault();data.tasks.push({id:crypto.randomUUID(),title:document.getElementById('taskTitle').value,due:document.getElementById('taskDue').value,priority:document.getElementById('taskPriority').value,note:document.getElementById('taskNote').value,done:false});closeModal();save()}
+function toggleTask(id){let t=data.tasks.find(x=>x.id===id);t.done=!t.done;save()}function deleteTask(id){if(confirm('Delete this task?')){data.tasks=data.tasks.filter(x=>x.id!==id);save()}}
+function openGoal(){openModal('Create goal',`<form onsubmit="addGoal(event)"><div class="field"><label>Goal name</label><input id="goalName" required placeholder="e.g. Emergency fund"></div><div class="row"><div class="field"><label>Goal category</label><select id="goalCategory"><option>Financial</option><option>Personal</option><option>Career</option><option>Travel</option><option>Health & fitness</option><option>Custom</option></select></div><div class="field"><label>Currency</label><select id="goalCurrency"><option>AED</option><option>INR</option></select></div></div><div class="row"><div class="field"><label>Target amount</label><input id="goalTarget" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Already saved</label><input id="goalCurrent" type="number" min="0" step="0.01" value="0"></div></div><button class="primary">Save goal</button></form>`)}
+function addGoal(e){e.preventDefault();let target=Number(document.getElementById('goalTarget').value);data.goals.push({id:crypto.randomUUID(),name:document.getElementById('goalName').value,category:document.getElementById('goalCategory').value,currency:document.getElementById('goalCurrency').value,target,current:Math.min(target,Number(document.getElementById('goalCurrent').value)||0)});closeModal();save()}
+function updateGoal(id){let g=data.goals.find(x=>x.id===id),v=Number(document.getElementById('progress-'+id).value);if(Number.isFinite(v)&&v>=0){g.current=v;save()}}
+function deleteGoal(id){if(confirm('Delete this goal?')){data.goals=data.goals.filter(x=>x.id!==id);save()}}
+function addCategory(){let type=document.getElementById('catType').value,c=document.getElementById('catCurrency').value,n=document.getElementById('newCategory').value.trim();if(!n)return;data.categories[type][c]??=[];if(!data.categories[type][c].includes(n))data.categories[type][c].push(n);document.getElementById('newCategory').value='';save()}
+function removeCategory(type,c,n){if(confirm('Remove category "'+n+'"? Existing transactions will remain unchanged.')){data.categories[type][c]=data.categories[type][c].filter(x=>x!==n);save()}}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my-finance-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.transactions||!d.tasks||!d.goals||!d.categories)throw Error();data=d;save();alert('Backup restored.')}catch(err){alert('This backup file is not valid.')}};r.readAsText(f);e.target.value=''}
+function clearData(){if(confirm('This permanently deletes all saved transactions, tasks, goals and custom categories from this browser. Continue?')){data=JSON.parse(JSON.stringify(defaults));save()}}
+renderAll();
+</script>
+</body></html>
