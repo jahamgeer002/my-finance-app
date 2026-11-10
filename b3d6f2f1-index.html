@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101d2a">
+<title>My Finance — Personal Manager</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#172331;--muted:#738091;--navy:#101d2a;--green:#16845d;--red:#c34e4e;--amber:#b97a0f;--line:#e7ebef;--accent:#dff4eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:88px}
+header{background:var(--navy);color:white;padding:22px 18px 24px;border-radius:0 0 24px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.brand{font-size:20px;font-weight:750;letter-spacing:.2px}.sub{color:#b7c4cf;font-size:12px;margin-top:4px}
+.balance-label{font-size:12px;color:#b7c4cf;margin-top:22px}.balance{font-size:32px;font-weight:750;margin-top:4px;letter-spacing:-.7px}
+.currency-switch{display:flex;gap:7px}.currency-switch button{border:1px solid #506070;background:transparent;color:#dce5ec;border-radius:20px;padding:7px 12px}.currency-switch button.active{background:white;color:var(--navy);border-color:white}
+.wrap{max-width:720px;margin:auto;padding:16px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:-2px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.grid3 .metric{font-size:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;box-shadow:0 3px 12px #15263808}.metric-label{font-size:12px;color:var(--muted)}.metric{font-size:20px;font-weight:750;margin-top:7px}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}.section-head h2{font-size:17px;margin:0}.small{font-size:12px;color:var(--muted)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:5}
+nav button{border:0;background:none;color:#7b8794;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 7px}nav button b{font-size:19px;font-weight:500}nav button.active{color:var(--green);font-weight:700}
+.page{display:none}.page.active{display:block}
+button,.btn{cursor:pointer}.primary{background:var(--green);color:white;border:0;border-radius:12px;padding:11px 15px;font-weight:650}.secondary{background:white;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 13px;font-weight:600}.danger{color:var(--red);border:1px solid #f0d5d5;background:#fff;border-radius:10px;padding:7px 10px}
+.list{display:flex;flex-direction:column;gap:8px}.item{background:white;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}.item-title{font-weight:650}.item-meta{font-size:12px;color:var(--muted);margin-top:4px}
+form{display:grid;gap:10px}.field{display:grid;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:650}input,select,textarea{width:100%;padding:12px;border:1px solid #dce2e8;border-radius:11px;background:white;color:var(--ink);font:inherit;min-height:44px}textarea{min-height:75px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.pill{font-size:11px;border-radius:20px;padding:4px 8px;background:#eef2f5;color:#526171;white-space:nowrap}.pill.ok{background:var(--accent);color:var(--green)}.pill.warn{background:#fff3d6;color:#8a5b00}.progress{height:8px;background:#edf0f2;border-radius:9px;overflow:hidden;margin:9px 0}.progress span{display:block;height:100%;background:var(--green);border-radius:9px}
+.empty{color:var(--muted);text-align:center;padding:22px 10px;font-size:13px}.notice{background:#fff8e8;border:1px solid #f1e2bb;color:#6d5722;border-radius:13px;padding:12px;font-size:12px;line-height:1.5;margin-top:14px}
+.modal{display:none;position:fixed;inset:0;background:#07111dcc;z-index:10;align-items:flex-end;justify-content:center;padding:12px}.modal.show{display:flex}.sheet{background:var(--bg);border-radius:20px 20px 14px 14px;padding:18px;width:min(100%,600px);max-height:90vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.sheet-head h3{margin:0}
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.chart-head h3{margin:0;font-size:15px}.chart-head select{width:auto;min-height:34px;padding:6px 8px;font-size:12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:8px}.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}
+.donut-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.donut-wrap svg{width:140px;height:140px;flex:none}.donut-legend{flex:1;min-width:150px;display:grid;gap:7px;font-size:13px}.donut-legend div{display:flex;justify-content:space-between;gap:8px}.donut-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.tri div{font-size:11px;color:var(--muted)}.tri b{display:block;font-size:14px;margin-top:3px;color:var(--ink)}
+.pay{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:6px 0;border-top:1px solid var(--line)}.pay button{border:0;background:none;color:var(--red);font-size:15px;padding:2px 8px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+@media(min-width:650px){.wrap{padding:22px}.summary{grid-template-columns:repeat(3,1fr)}.modal{align-items:center}}
+</style>
+</head>
+<body>
+<header>
+ <div class="top"><div><div class="brand">My Finance</div><div class="sub">Your money · credit · tasks · goals</div></div><div class="currency-switch"><button class="active" id="aedBtn" onclick="setCurrency('AED')">AED</button><button id="inrBtn" onclick="setCurrency('INR')">INR</button></div></div>
+ <div class="balance-label">NET BALANCE · <span id="activeCurrency">AED</span></div><div class="balance" id="balance">AED 0.00</div>
+</header>
+<main class="wrap">
+<section id="dashboard" class="page active">
+ <div class="summary">
+  <div class="card"><div class="metric-label">Income</div><div class="metric green" id="incomeTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Expenses</div><div class="metric red" id="expenseTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Credit to receive</div><div class="metric amber" id="creditBalanceTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Credit received</div><div class="metric green" id="creditReceivedTotal">AED 0</div></div>
+  <div class="card"><div class="metric-label">Tasks pending</div><div class="metric" id="pendingTotal">0</div></div>
+  <div class="card"><div class="metric-label">Active goals</div><div class="metric" id="goalTotal">0</div></div>
+ </div>
+
+ <div class="section-head"><h2>Charts</h2></div>
+ <div class="card"><div class="chart-head"><h3>Income vs expenses · last 6 months</h3></div><div id="barChart"></div></div>
+ <div class="card" style="margin-top:10px"><div class="chart-head"><h3>Where your money goes</h3><select id="chartPeriod" onchange="renderDashboard()"><option value="month">This month</option><option value="3m">Last 3 months</option><option value="all">All time</option></select></div><div id="donutChart"></div></div>
+ <div class="card" style="margin-top:10px"><div class="chart-head"><h3>Credit · who still owes you</h3><button class="secondary" style="padding:6px 10px;font-size:12px" onclick="showPage('credit')">Open</button></div><div id="creditChart"></div></div>
+
+ <div class="section-head"><h2>Recent transactions</h2><button class="secondary" onclick="showPage('money')">See all</button></div>
+ <div class="list" id="recentList"></div>
+ <div class="section-head"><h2>Your goals</h2><button class="secondary" onclick="showPage('goals')">View goals</button></div>
+ <div class="list" id="dashboardGoals"></div>
+ <div class="section-head"><h2>Upcoming tasks</h2><button class="secondary" onclick="showPage('tasks')">View tasks</button></div>
+ <div class="list" id="dashboardTasks"></div>
+</section>
+
+<section id="money" class="page">
+ <div class="section-head"><h2>Income & expenses</h2><button class="primary" onclick="openTransaction()">+ Add</button></div>
+ <div class="row"><div class="field"><label>Currency view</label><select id="moneyCurrency" onchange="renderMoney()"><option>AED</option><option>INR</option></select></div><div class="field"><label>Type</label><select id="moneyType" onchange="renderMoney()"><option value="all">All transactions</option><option value="Income">Income</option><option value="Expense">Expenses</option></select></div></div>
+ <div class="summary" style="margin:12px 0"><div class="card"><div class="metric-label">Income</div><div class="metric green" id="moneyIncome">0</div></div><div class="card"><div class="metric-label">Expenses</div><div class="metric red" id="moneyExpense">0</div></div></div>
+ <div class="list" id="transactionList"></div>
+</section>
+
+<section id="credit" class="page">
+ <div class="section-head"><h2>Credit given</h2><button class="primary" onclick="openCredit()">+ Add credit</button></div>
+ <div class="row"><div class="field"><label>Currency view</label><select id="creditCurrency" onchange="renderCredits()"><option>AED</option><option>INR</option></select></div><div class="field"><label>Status</label><select id="creditStatus" onchange="renderCredits()"><option value="all">All</option><option value="open">Open (balance due)</option><option value="settled">Settled</option></select></div></div>
+ <div class="grid3"><div class="card"><div class="metric-label">Total credit</div><div class="metric" id="creditTotal">0</div></div><div class="card"><div class="metric-label">Received</div><div class="metric green" id="creditReceived">0</div></div><div class="card"><div class="metric-label">Balance</div><div class="metric amber" id="creditBalance">0</div></div></div>
+ <div class="list" id="creditList"></div>
+ <div class="notice">Credit is tracked separately and does not change your Net Balance.</div>
+</section>
+
+<section id="tasks" class="page">
+ <div class="section-head"><h2>My tasks</h2><button class="primary" onclick="openTask()">+ Add task</button></div>
+ <div class="field"><label>Show</label><select id="taskFilter" onchange="renderTasks()"><option value="all">All tasks</option><option value="open">Pending</option><option value="done">Completed</option></select></div>
+ <div class="list" id="taskList" style="margin-top:12px"></div>
+</section>
+<section id="goals" class="page">
+ <div class="section-head"><h2>My goals</h2><button class="primary" onclick="openGoal()">+ Add goal</button></div>
+ <div class="list" id="goalList"></div>
+</section>
+<section id="settings" class="page">
+ <div class="section-head"><h2>Customise your app</h2></div>
+ <div class="card">
+  <h3 style="margin:0 0 12px">Categories</h3>
+  <div class="row"><div class="field"><label>Category type</label><select id="catType"><option>Expense</option><option>Income</option></select></div><div class="field"><label>Currency</label><select id="catCurrency"><option>AED</option><option>INR</option><option>Both</option></select></div></div>
+  <div class="field" style="margin-top:9px"><label>New category name</label><input id="newCategory" placeholder="e.g. Petrol, Freelance"></div>
+  <button class="primary" style="margin-top:10px" onclick="addCategory()">Add category</button>
+  <div id="categoryList" class="list" style="margin-top:14px"></div>
+ </div>
+ <div class="card" style="margin-top:13px">
+  <h3 style="margin:0 0 8px">Backup & restore</h3>
+  <p class="small">Export a backup file regularly. You can keep it in iCloud Drive using the iPhone Files app.</p>
+  <div class="row"><button class="secondary" onclick="exportData()">Export backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button></div>
+  <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)">
+  <button class="danger" style="margin-top:12px" onclick="clearData()">Delete all app data</button>
+ </div>
+ <div class="notice"><b>Where is your data stored?</b><br>This starter app stores data in this browser on this iPhone. It does not automatically sync with iCloud or your other phone. Use Export backup and save the file in iCloud Drive for a manual backup. Do not enter bank passwords, card numbers or other highly sensitive details.</div>
+</section>
+<footer>My Finance · Personal use · Starter edition</footer>
+</main>
+<nav>
+ <button class="active" data-page="dashboard" onclick="showPage('dashboard')"><b>⌂</b>Home</button>
+ <button data-page="money" onclick="showPage('money')"><b>◉</b>Money</button>
+ <button data-page="credit" onclick="showPage('credit')"><b>⇄</b>Credit</button>
+ <button data-page="tasks" onclick="showPage('tasks')"><b>☑</b>Tasks</button>
+ <button data-page="goals" onclick="showPage('goals')"><b>◎</b>Goals</button>
+ <button data-page="settings" onclick="showPage('settings')"><b>⚙</b>Settings</button>
+</nav>
+<div class="modal" id="modal"><div class="sheet"><div class="sheet-head"><h3 id="modalTitle">Add</h3><button class="secondary" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div>
+<script>
+const KEY='myFinanceStarter_v1';
+const PAL=['#16845d','#3b82a0','#c98a1b','#c34e4e','#7a5ea8','#8a97a3'];
+const defaults={transactions:[],tasks:[],goals:[],credits:[],categories:{Expense:{AED:['Rent','Food & groceries','Transport','Shopping','Mobile & internet','Loan / EMI','Tabby','Family','Travel','Other'],INR:['Food','Shopping','Family','Travel','Other']},Income:{AED:['Salary','Overtime','Freelance','Interest','Refund','Other'],INR:['Salary','Business','Interest','Refund','Other']} }};
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))||JSON.parse(JSON.stringify(defaults))}catch(e){data=JSON.parse(JSON.stringify(defaults))}
+data.credits=data.credits||[];
+let currency='AED';
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function r2(n){return Math.round((Number(n)||0)*100)/100}
+function fmt(n,c){return new Intl.NumberFormat(c==='INR'?'en-IN':'en-AE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}
+function compact(n){return new Intl.NumberFormat('en',{notation:'compact',maximumFractionDigits:1}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function today(){let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function byDateDesc(a,b){return String(b.date).localeCompare(String(a.date))}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));renderAll();window.scrollTo(0,0)}
+function setCurrency(c){currency=c;document.getElementById('aedBtn').classList.toggle('active',c==='AED');document.getElementById('inrBtn').classList.toggle('active',c==='INR');document.getElementById('moneyCurrency').value=c;document.getElementById('creditCurrency').value=c;renderAll()}
+function sums(c){let t=data.transactions.filter(x=>x.currency===c);return {inc:t.filter(x=>x.type==='Income').reduce((a,x)=>a+Number(x.amount),0),exp:t.filter(x=>x.type==='Expense').reduce((a,x)=>a+Number(x.amount),0)}}
+function itemHTML(left,meta,right,extra=''){return `<div class="item"><div style="min-width:0"><div class="item-title">${left}</div><div class="item-meta">${meta}</div></div><div style="text-align:right;white-space:nowrap">${right}${extra}</div></div>`}
+
+/* ---------- Credit helpers ---------- */
+function creditInfo(c){let rec=r2((c.payments||[]).reduce((a,p)=>a+Number(p.amount),0));return{rec,bal:Math.max(0,r2(c.amount-rec))}}
+function creditStatus(c){let i=creditInfo(c);return i.bal<=0?['Settled','ok']:i.rec>0?['Partly received','warn']:['Pending','']}
+function creditTotals(cur){let all=data.credits.filter(x=>x.currency===cur),tot=0,rec=0;all.forEach(x=>{tot+=Number(x.amount);rec+=creditInfo(x).rec});return{tot:r2(tot),rec:r2(rec),bal:r2(tot-rec)}}
+
+/* ---------- Charts ---------- */
+function lastMonths(n){let out=[],now=new Date();for(let i=n-1;i>=0;i--){let x=new Date(now.getFullYear(),now.getMonth()-i,1);out.push({key:x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'),label:x.toLocaleString('en',{month:'short'})})}return out}
+function monthSum(t,type,key){return t.filter(x=>x.type===type&&String(x.date).slice(0,7)===key).reduce((a,x)=>a+Number(x.amount),0)}
+function barChart(){
+ const months=lastMonths(6),t=data.transactions.filter(x=>x.currency===currency);
+ const rows=months.map(m=>({l:m.label,i:monthSum(t,'Income',m.key),e:monthSum(t,'Expense',m.key)}));
+ const max=Math.max(...rows.flatMap(r=>[r.i,r.e]));
+ if(!max)return '<div class="empty">Add income or expenses to see this chart.</div>';
+ const W=320,base=150,ch=128,gw=(W-20)/6;
+ let s=`<svg viewBox="0 0 ${W} 178" width="100%" role="img" aria-label="Income and expenses by month"><line x1="10" y1="${base}" x2="${W-10}" y2="${base}" stroke="#e7ebef"/>`;
+ rows.forEach((r,k)=>{const cx=10+gw*k+gw/2;[[r.i,'#16845d',-16],[r.e,'#c34e4e',2]].forEach(([v,col,dx])=>{const h=v/max*ch;s+=`<rect x="${cx+dx}" y="${base-h}" width="14" height="${h}" rx="3" fill="${col}"/>`;if(v>0)s+=`<text x="${cx+dx+7}" y="${base-h-4}" font-size="8" text-anchor="middle" fill="#738091">${compact(v)}</text>`});s+=`<text x="${cx}" y="168" font-size="10" text-anchor="middle" fill="#738091">${r.l}</text>`});
+ return s+'</svg><div class="legend"><span><i style="background:#16845d"></i>Income</span><span><i style="background:#c34e4e"></i>Expenses</span><span>'+currency+'</span></div>';
+}
+function donutChart(){
+ const p=document.getElementById('chartPeriod').value,now=new Date();let start='';
+ if(p==='month')start=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-01';
+ if(p==='3m'){const d=new Date(now.getFullYear(),now.getMonth()-2,1);start=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'}
+ const ex=data.transactions.filter(x=>x.currency===currency&&x.type==='Expense'&&(!start||String(x.date)>=start));
+ const total=ex.reduce((a,x)=>a+Number(x.amount),0);
+ if(!total)return '<div class="empty">No expenses in this period.</div>';
+ const m={};ex.forEach(x=>{m[x.category]=(m[x.category]||0)+Number(x.amount)});
+ let arr=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+ if(arr.length>6){const rest=arr.slice(5).reduce((a,x)=>a+x[1],0);arr=arr.slice(0,5).concat([['Others',rest]])}
+ let off=25,seg='',leg='';
+ arr.forEach(([n,v],i)=>{const pct=v/total*100,col=PAL[i%PAL.length];seg+=`<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${col}" stroke-width="6" stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="${off}"/>`;off-=pct;leg+=`<div><span><i style="background:${col}"></i>${esc(n)}</span><b>${fmt(v,currency)} <span class="small">${Math.round(pct)}%</span></b></div>`});
+ return `<div class="donut-wrap"><svg viewBox="0 0 42 42" role="img" aria-label="Expenses by category"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="#edf0f2" stroke-width="6"/>${seg}<text x="21" y="21.5" text-anchor="middle" font-size="4.4" font-weight="700" fill="#172331">${compact(total)}</text><text x="21" y="26" text-anchor="middle" font-size="2.8" fill="#738091">${currency}</text></svg><div class="donut-legend">${leg}</div></div>`;
+}
+function creditChart(){
+ const g={};data.credits.filter(c=>c.currency===currency).forEach(c=>{const k=c.person.trim().toLowerCase(),i=creditInfo(c);g[k]=g[k]||{n:c.person.trim(),a:0,r:0};g[k].a+=Number(c.amount);g[k].r+=i.rec});
+ const arr=Object.values(g).map(x=>({...x,b:r2(x.a-x.r)})).filter(x=>x.b>0).sort((a,b)=>b.b-a.b).slice(0,5);
+ if(!arr.length)return '<div class="empty">No pending credit in '+currency+'.</div>';
+ return arr.map(x=>`<div style="margin-bottom:10px"><div class="top"><b>${esc(x.n)}</b><span class="small">Balance <b class="amber">${fmt(x.b,currency)}</b></span></div><div class="progress"><span style="width:${Math.min(100,100*x.r/x.a)}%"></span></div><div class="small">Received ${fmt(x.r,currency)} of ${fmt(x.a,currency)}</div></div>`).join('');
+}
+
+/* ---------- Renderers ---------- */
+function renderDashboard(){
+ let s=sums(currency),ct=creditTotals(currency);document.getElementById('activeCurrency').textContent=currency;document.getElementById('balance').textContent=currency+' '+fmt(s.inc-s.exp,currency);document.getElementById('incomeTotal').textContent=currency+' '+fmt(s.inc,currency);document.getElementById('expenseTotal').textContent=currency+' '+fmt(s.exp,currency);
+ document.getElementById('creditBalanceTotal').textContent=currency+' '+fmt(ct.bal,currency);document.getElementById('creditReceivedTotal').textContent=currency+' '+fmt(ct.rec,currency);
+ document.getElementById('pendingTotal').textContent=data.tasks.filter(x=>!x.done).length;document.getElementById('goalTotal').textContent=data.goals.length;
+ document.getElementById('barChart').innerHTML=barChart();document.getElementById('donutChart').innerHTML=donutChart();document.getElementById('creditChart').innerHTML=creditChart();
+ let recent=data.transactions.slice().sort(byDateDesc).slice(0,4);document.getElementById('recentList').innerHTML=recent.length?recent.map(x=>itemHTML(esc(x.title),`${esc(x.category)} · ${esc(x.date)} · ${x.currency}`,`<b class="${x.type==='Income'?'green':'red'}">${x.type==='Income'?'+':'−'}${fmt(x.amount,x.currency)}</b>`)).join(''):'<div class="empty">No transactions yet. Tap Money to add your first one.</div>';
+ document.getElementById('dashboardGoals').innerHTML=data.goals.slice(0,3).map(g=>`<div class="item"><div style="width:100%"><div class="item-title">${esc(g.name)}</div><div class="item-meta">${g.currency} ${fmt(g.current,g.currency)} of ${fmt(g.target,g.currency)}</div><div class="progress"><span style="width:${Math.min(100,100*g.current/g.target)}%"></span></div></div></div>`).join('')||'<div class="empty">No goals yet.</div>';
+ document.getElementById('dashboardTasks').innerHTML=data.tasks.filter(t=>!t.done).slice(0,3).map(t=>itemHTML(esc(t.title),`${esc(t.due||'No due date')} · ${esc(t.priority)}`,'<span class="pill">Pending</span>')).join('')||'<div class="empty">No pending tasks.</div>';
+}
+function renderMoney(){let c=document.getElementById('moneyCurrency').value||'AED',type=document.getElementById('moneyType').value||'all';let arr=data.transactions.filter(x=>x.currency===c&&(type==='all'||x.type===type)).slice().sort(byDateDesc);let s=sums(c);document.getElementById('moneyIncome').textContent=c+' '+fmt(s.inc,c);document.getElementById('moneyExpense').textContent=c+' '+fmt(s.exp,c);document.getElementById('transactionList').innerHTML=arr.map(x=>itemHTML(esc(x.title),`${esc(x.category)} · ${esc(x.date)} · ${x.currency}`,`<b class="${x.type==='Income'?'green':'red'}">${x.type==='Income'?'+':'−'}${fmt(x.amount,c)}</b>`,`<div style="margin-top:6px"><button class="danger" onclick="deleteTransaction('${x.id}')">Delete</button></div>`)).join('')||'<div class="empty">No matching transactions.</div>'}
+function renderCredits(){
+ const c=document.getElementById('creditCurrency').value||'AED',st=document.getElementById('creditStatus').value||'all',ct=creditTotals(c);
+ document.getElementById('creditTotal').textContent=fmt(ct.tot,c);document.getElementById('creditReceived').textContent=fmt(ct.rec,c);document.getElementById('creditBalance').textContent=fmt(ct.bal,c);
+ const arr=data.credits.filter(x=>x.currency===c).filter(x=>{const b=creditInfo(x).bal;return st==='all'||(st==='open'?b>0:b<=0)}).slice().sort(byDateDesc);
+ document.getElementById('creditList').innerHTML=arr.map(x=>{const i=creditInfo(x),s=creditStatus(x),pct=Math.min(100,100*i.rec/x.amount);
+  const pays=(x.payments||[]).slice().sort(byDateDesc).map(p=>`<div class="pay"><span>${esc(p.date)} · received</span><span><b class="green">${fmt(p.amount,c)}</b><button onclick="deletePayment('${x.id}','${p.id}')" aria-label="Delete payment">×</button></span></div>`).join('');
+  return `<div class="card"><div class="top"><div style="min-width:0"><div class="item-title">${esc(x.person)}</div><div class="item-meta">${esc(x.date)}${x.note?' · '+esc(x.note):''}</div></div><span class="pill ${s[1]}">${s[0]}</span></div>
+  <div class="tri"><div>Credit<b>${fmt(x.amount,c)}</b></div><div>Received<b class="green">${fmt(i.rec,c)}</b></div><div>Balance<b class="${i.bal>0?'amber':'green'}">${fmt(i.bal,c)}</b></div></div>
+  <div class="progress"><span style="width:${pct}%"></span></div>${pays}
+  <div class="row" style="margin-top:10px">${i.bal>0?`<button class="primary" onclick="openPayment('${x.id}')">+ Receive payment</button>`:'<span></span>'}<button class="danger" onclick="deleteCredit('${x.id}')">Delete credit</button></div></div>`}).join('')||'<div class="empty">No credit entries here yet. Tap + Add credit.</div>';
+}
+function renderTasks(){let f=document.getElementById('taskFilter').value||'all',arr=data.tasks.filter(t=>f==='all'||(f==='done'?t.done:!t.done));document.getElementById('taskList').innerHTML=arr.map(t=>`<div class="item"><div style="min-width:0"><div class="item-title" style="${t.done?'text-decoration:line-through;color:#89939e':''}">${esc(t.title)}</div><div class="item-meta">${esc(t.due||'No due date')} · ${esc(t.priority)} ${t.note?'· '+esc(t.note):''}</div></div><div style="display:flex;gap:5px"><button class="secondary" onclick="toggleTask('${t.id}')">${t.done?'Undo':'Done'}</button><button class="danger" onclick="deleteTask('${t.id}')">×</button></div></div>`).join('')||'<div class="empty">No tasks here yet.</div>'}
+function renderGoals(){document.getElementById('goalList').innerHTML=data.goals.map(g=>`<div class="card"><div class="top"><div><div class="item-title">${esc(g.name)}</div><div class="item-meta">${esc(g.category)} · ${g.currency}</div></div><button class="danger" onclick="deleteGoal('${g.id}')">Delete</button></div><div class="progress"><span style="width:${Math.min(100,100*g.current/g.target)}%"></span></div><div class="top"><span class="small">${fmt(g.current,g.currency)} saved</span><b>${Math.round(100*g.current/g.target)}%</b></div><div class="field" style="margin-top:12px"><label>Update progress (${g.currency})</label><div class="row"><input id="progress-${g.id}" type="number" min="0" step="0.01" placeholder="New total saved"><button class="secondary" onclick="updateGoal('${g.id}')">Update</button></div></div></div>`).join('')||'<div class="empty">Create a goal, such as emergency fund, holiday or new phone.</div>'}
+function renderCategories(){let out='';for(let type of ['Expense','Income'])for(let c of ['AED','INR','Both'])for(let cat of data.categories[type][c]||[])out+=`<div class="item"><div><div class="item-title">${esc(cat)}</div><div class="item-meta">${type} · ${c}</div></div><button class="danger" onclick="removeCategory('${type}','${c}',${JSON.stringify(cat).replace(/"/g,'&quot;')})">Remove</button></div>`;document.getElementById('categoryList').innerHTML=out}
+function renderAll(){renderDashboard();renderMoney();renderCredits();renderTasks();renderGoals();renderCategories()}
+function openModal(title,html){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=html;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+
+/* ---------- Transactions ---------- */
+function openTransaction(){openModal('Add transaction',`<form onsubmit="addTransaction(event)"><div class="row"><div class="field"><label>Type</label><select id="txType" onchange="refreshTxCategories()"><option>Expense</option><option>Income</option></select></div><div class="field"><label>Currency</label><select id="txCurrency" onchange="refreshTxCategories()"><option>AED</option><option>INR</option></select></div></div><div class="field"><label>Description</label><input id="txTitle" required placeholder="e.g. Monthly salary or groceries"></div><div class="row"><div class="field"><label>Amount</label><input id="txAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div><div class="field"><label>Date</label><input id="txDate" type="date" required value="${today()}"></div></div><div class="field"><label>Category</label><select id="txCategory"></select></div><button class="primary">Save transaction</button></form>`);document.getElementById('txCurrency').value=currency;refreshTxCategories()}
+function refreshTxCategories(){let type=document.getElementById('txType').value,c=document.getElementById('txCurrency').value;let cats=[...(data.categories[type][c]||[]),...(data.categories[type].Both||[])];document.getElementById('txCategory').innerHTML=cats.map(x=>`<option>${esc(x)}</option>`).join('')}
+function addTransaction(e){e.preventDefault();let type=document.getElementById('txType').value,c=document.getElementById('txCurrency').value;data.transactions.push({id:crypto.randomUUID(),type,currency:c,title:document.getElementById('txTitle').value,amount:Number(document.getElementById('txAmount').value),date:document.getElementById('txDate').value,category:document.getElementById('txCategory').value});closeModal();save()}
+function deleteTransaction(id){if(confirm('Delete this transaction?')){data.transactions=data.transactions.filter(x=>x.id!==id);save()}}
+
+/* ---------- Credit ---------- */
+function openCredit(){openModal('Add credit',`<form onsubmit="addCredit(event)"><div class="field"><label>To whom</label><input id="crPerson" required placeholder="Person or company name"></div><div class="row"><div class="field"><label>Credit amount</label><input id="crAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div><div class="field"><label>Currency</label><select id="crCurrency"><option>AED</option><option>INR</option></select></div></div><div class="row"><div class="field"><label>Date given</label><input id="crDate" type="date" required value="${today()}"></div><div class="field"><label>Already received</label><input id="crRec" type="number" min="0" step="0.01" value="0"></div></div><div class="field"><label>Note (optional)</label><input id="crNote" placeholder="e.g. Goods supplied, personal loan"></div><button class="primary">Save credit</button></form>`);document.getElementById('crCurrency').value=currency}
+function addCredit(e){e.preventDefault();let amount=r2(document.getElementById('crAmount').value),rec=r2(document.getElementById('crRec').value),date=document.getElementById('crDate').value;
+ if(rec>amount){alert('Received amount cannot be more than the credit amount.');return}
+ let c={id:crypto.randomUUID(),person:document.getElementById('crPerson').value.trim(),amount,currency:document.getElementById('crCurrency').value,date,note:document.getElementById('crNote').value.trim(),payments:[]};
+ if(rec>0)c.payments.push({id:crypto.randomUUID(),amount:rec,date});
+ data.credits.push(c);closeModal();save()}
+function openPayment(id){let c=data.credits.find(x=>x.id===id),i=creditInfo(c);openModal('Receive from '+c.person,`<p class="small" style="margin-top:0">Balance due: <b>${c.currency} ${fmt(i.bal,c.currency)}</b></p><form onsubmit="addPayment(event,'${id}')"><div class="row"><div class="field"><label>Amount received</label><input id="payAmount" type="number" min="0.01" max="${i.bal}" step="0.01" required value="${i.bal}"></div><div class="field"><label>Date</label><input id="payDate" type="date" required value="${today()}"></div></div><button class="primary">Save payment</button></form>`)}
+function addPayment(e,id){e.preventDefault();let c=data.credits.find(x=>x.id===id),i=creditInfo(c),amt=r2(document.getElementById('payAmount').value);
+ if(amt<=0||amt>i.bal){alert('Enter an amount up to the balance due.');return}
+ c.payments=c.payments||[];c.payments.push({id:crypto.randomUUID(),amount:amt,date:document.getElementById('payDate').value});closeModal();save()}
+function deletePayment(cid,pid){if(confirm('Delete this received payment?')){let c=data.credits.find(x=>x.id===cid);c.payments=c.payments.filter(p=>p.id!==pid);save()}}
+function deleteCredit(id){if(confirm('Delete this credit entry and its payments?')){data.credits=data.credits.filter(x=>x.id!==id);save()}}
+
+/* ---------- Tasks ---------- */
+function openTask(){openModal('Create task',`<form onsubmit="addTask(event)"><div class="field"><label>Task name</label><input id="taskTitle" required placeholder="What needs to be done?"></div><div class="row"><div class="field"><label>Due date</label><input id="taskDue" type="date"></div><div class="field"><label>Priority</label><select id="taskPriority"><option>Normal</option><option>High</option><option>Low</option></select></div></div><div class="field"><label>Notes (optional)</label><textarea id="taskNote" placeholder="Add details"></textarea></div><button class="primary">Save task</button></form>`)}
+function addTask(e){e.preventDefault();data.tasks.push({id:crypto.randomUUID(),title:document.getElementById('taskTitle').value,due:document.getElementById('taskDue').value,priority:document.getElementById('taskPriority').value,note:document.getElementById('taskNote').value,done:false});closeModal();save()}
+function toggleTask(id){let t=data.tasks.find(x=>x.id===id);t.done=!t.done;save()}function deleteTask(id){if(confirm('Delete this task?')){data.tasks=data.tasks.filter(x=>x.id!==id);save()}}
+
+/* ---------- Goals ---------- */
+function openGoal(){openModal('Create goal',`<form onsubmit="addGoal(event)"><div class="field"><label>Goal name</label><input id="goalName" required placeholder="e.g. Emergency fund"></div><div class="row"><div class="field"><label>Goal category</label><select id="goalCategory"><option>Financial</option><option>Personal</option><option>Career</option><option>Travel</option><option>Health & fitness</option><option>Custom</option></select></div><div class="field"><label>Currency</label><select id="goalCurrency"><option>AED</option><option>INR</option></select></div></div><div class="row"><div class="field"><label>Target amount</label><input id="goalTarget" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Already saved</label><input id="goalCurrent" type="number" min="0" step="0.01" value="0"></div></div><button class="primary">Save goal</button></form>`)}
+function addGoal(e){e.preventDefault();let target=Number(document.getElementById('goalTarget').value);data.goals.push({id:crypto.randomUUID(),name:document.getElementById('goalName').value,category:document.getElementById('goalCategory').value,currency:document.getElementById('goalCurrency').value,target,current:Math.min(target,Number(document.getElementById('goalCurrent').value)||0)});closeModal();save()}
+function updateGoal(id){let g=data.goals.find(x=>x.id===id),v=Number(document.getElementById('progress-'+id).value);if(Number.isFinite(v)&&v>=0){g.current=v;save()}}
+function deleteGoal(id){if(confirm('Delete this goal?')){data.goals=data.goals.filter(x=>x.id!==id);save()}}
+
+/* ---------- Settings ---------- */
+function addCategory(){let type=document.getElementById('catType').value,c=document.getElementById('catCurrency').value,n=document.getElementById('newCategory').value.trim();if(!n)return;data.categories[type][c]??=[];if(!data.categories[type][c].includes(n))data.categories[type][c].push(n);document.getElementById('newCategory').value='';save()}
+function removeCategory(type,c,n){if(confirm('Remove category "'+n+'"? Existing transactions will remain unchanged.')){data.categories[type][c]=data.categories[type][c].filter(x=>x!==n);save()}}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my-finance-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.transactions||!d.tasks||!d.goals||!d.categories)throw Error();d.credits=d.credits||[];data=d;save();alert('Backup restored.')}catch(err){alert('This backup file is not valid.')}};r.readAsText(f);e.target.value=''}
+function clearData(){if(confirm('This permanently deletes all saved transactions, credits, tasks, goals and custom categories from this browser. Continue?')){data=JSON.parse(JSON.stringify(defaults));save()}}
+renderAll();
+</script>
+</body></html>
